@@ -29,7 +29,7 @@ BmnFDContFact.cxx
 BmnFDGeo.cxx 
 BmnFDGeoPar.cxx
 BmnTrigDigitizer.cxx
-MyFunctions.cxx
+BmnFDHitCalc.cxx
 )
 
 Set(HEADERS)

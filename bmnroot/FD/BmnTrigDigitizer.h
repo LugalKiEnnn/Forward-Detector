@@ -33,8 +33,8 @@ class BmnTrigDigitizer : public FairTask
   /** Output array of BmnTrigDigits **/
   TClonesArray* fDigitArray;  
 
-  std::map<Int_t,Int_t> fHitMap;
-  std::map<Int_t,Double_t> fAmpMap; //test
+  //map for storage energies at modules
+  std::map<Int_t,Double_t> fAmpMap; 
   
   BmnTrigDigitizer(const BmnTrigDigitizer&);
   BmnTrigDigitizer& operator=(const BmnTrigDigitizer&);

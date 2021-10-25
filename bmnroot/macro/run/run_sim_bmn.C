@@ -43,8 +43,8 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
 
     // Smearing of beam interaction point, if needed, and primary vertex position
     // DO NOT do it in corresponding gen. sections to avoid incorrect summation!!!
-    //primGen->SetBeam(0.5, -4.6, 0.0, 0.0);
-    primGen->SetBeam(2.06, -4.22, 0.0, 0.0);
+    primGen->SetBeam(0.5, -4.6, 0.0, 0.0);
+    //primGen->SetBeam(2.06, -4.22, 0.0, 0.0);
     primGen->SetTarget(-2.3, 0.0);
     primGen->SmearVertexZ(kFALSE);
     primGen->SmearVertexXY(kFALSE);
@@ -159,7 +159,6 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     siliconDigit->SetUseRealEffects(useRealEffects);
     fRun->AddTask(siliconDigit);
 
-    //моё тут вписано
     // FD-Digitizer    
     BmnTrigDigitizer* trigDigit = new BmnTrigDigitizer();
     fRun->AddTask(trigDigit);

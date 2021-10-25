@@ -13,6 +13,7 @@ void readFD(TString fileName = "bmnsim.root") {
         return;
     }
 
+
     TChain* out = new TChain("bmndata");
     out->Add(fileName.Data());
     cout << "#recorded entries = " << out->GetEntries() << endl;
@@ -41,7 +42,6 @@ void readFD(TString fileName = "bmnsim.root") {
     histModDif->SetLineColor(2);
     histAmpDif->SetLineColor(2);
 
-    //for (Int_t iEv = 0; iEv < 150; iEv++) {
     for (Int_t iEv = 0; iEv < out->GetEntries(); iEv++) {
         out->GetEntry(iEv);
         
@@ -60,32 +60,6 @@ void readFD(TString fileName = "bmnsim.root") {
         
         }
     }
-    /*
-    //fffffffffffffffff
-    Double_t vals[64];
-    Double_t sims[64];
-    Int_t colors[64];
-    char lbls[64];
-    for(Int_t i = 0; i < 64; i++) {
-        vals[i] = histMod->GetBinContent(i);
-        sims[i] = 1;
-        lbls[i] = i;
-        colors[i] = vals[i];
-    }
-    const char *a = lbls;
-    TCanvas *cpie = new TCanvas("cpie","TPie test",700,700);
-    TPie *pie = new TPie("pieChart", "Pie Chart for histogram", 64, sims);
-    cpie->cd(1);
-    pie->SetAngularOffset(89.6);
-    pie->SetRadius(.35);
-    pie->SetFillColors(colors);
-    for(Int_t i = 0; i < 64; i++) {
-        pie->GetSlice(i)->SetTitle("a");
-    }
-    pie->Draw();
-
-    //fffffffffffffffff
-    */
 
     histModDif->Add(histMod,histModOld, -1, 1);
     histAmpDif->Add(histAmp,histAmpOld, -1, 1);
@@ -113,7 +87,5 @@ void readFD(TString fileName = "bmnsim.root") {
 
     hStackMod->Write();
     hStackAmp->Write();
-
-    //pie->Draw();
 
 }

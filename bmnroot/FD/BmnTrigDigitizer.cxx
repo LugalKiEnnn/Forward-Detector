@@ -5,7 +5,7 @@
 
 #include "BmnTrigDigitizer.h"
 #include "BmnFDPoint.h"
-#include <MyFunctions.h>
+#include <BmnFDHitCalc.h>
 #include "BmnTrigDigit.h"
 
 #include "FairRootManager.h"
@@ -68,7 +68,6 @@ void BmnTrigDigitizer::Exec(Option_t* opt) {
   if ( ! fDigitArray ) Fatal("Exec", "No TrigDigit array");
 
   fDigitArray->Delete();
-  fHitMap.clear();
   fAmpMap.clear();
 
   // Declare some variables
@@ -76,7 +75,6 @@ void BmnTrigDigitizer::Exec(Option_t* opt) {
   Double_t x, y, z;         // Position
 
   //Инициализируем массив углов 
-  //Int_t modsAngles[64] = initModsAngles(modsAngles);
   Double_t modsAngles[64];
   initModsAngles(modsAngles);
 
@@ -94,9 +92,7 @@ void BmnTrigDigitizer::Exec(Option_t* opt) {
     //Находим модуль для точки
     Int_t mod = modOfPoint(x,y,modsAngles);
     
-    fHitMap[iPoint] = mod;
-    /*
-    // Ищем что за модули для точек
+    //Если такой ключ-модуль уже был создан, он просто дополняется
     bool flag1 = false;
     for(map<Int_t,Double_t>::iterator it = fAmpMap.begin(); it != fAmpMap.end(); ++it) {
       if(it->first == mod) {
@@ -107,53 +103,22 @@ void BmnTrigDigitizer::Exec(Option_t* opt) {
     }
     if(flag1 == false)
       fAmpMap[mod] = point->GetEnergyLoss();
-*/
-  }   // Loop over MCPoints
+
+  }   
   
-  //создаём диджиты
+  //Создаём диджиты
   BmnTrigDigit digi = BmnTrigDigit();
-  bool flag; 
-/*
+
+  //Кладём в массив диджитов диджит с заданной энергией в модуле
   for(map<Int_t,Double_t>::iterator mit = fAmpMap.begin(); mit != fAmpMap.end(); ++mit){
     digi.SetMod((Short_t) mit->first);
 
     digi.SetAmp(mit->second);
 
     new ((*fDigitArray)[fDigitArray->GetEntriesFast()]) BmnTrigDigit(digi);
-    cout << "digi = " << digi.GetMod() << " amp = " << digi.GetAmp() << endl;
+    //cout << "mod = " << digi.GetMod() << " amp = " << digi.GetAmp() << endl;
 
   }
-  */
-  //for(Int_t i = -1; i < 64; i++){
-    for(Int_t i = -1; i < 64; i++){
-
-    flag = false;
-
-    for(map<Int_t,Int_t>::iterator mit = fHitMap.begin(); mit != fHitMap.end(); ++mit){
-
-      point = (BmnFDPoint*) fPointArray->UncheckedAt(mit->first);
-      
-      if(mit->second == i){
-
-        if(flag == false){
-          
-          digi.SetMod((Short_t) i);
-          digi.SetAmp(point->GetEnergyLoss());
-
-          flag = true;
-          
-          new ((*fDigitArray)[fDigitArray->GetEntriesFast()]) BmnTrigDigit(digi);
-        }
-        else{          
-          
-          BmnTrigDigit* dig = (BmnTrigDigit*) fDigitArray->At(fDigitArray->GetLast()); 
-
-          dig->IncreaseAmp(point->GetEnergyLoss());
-        }
-      }
-    }    
-  }
-  
   
   // Event summary
   cout << "-I- BmnTrigDigitizer: " << nPoints << " FDPoints, "

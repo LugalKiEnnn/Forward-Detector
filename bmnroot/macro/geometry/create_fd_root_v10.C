@@ -15,10 +15,8 @@ R__ADD_INCLUDE_PATH($VMCWORKDIR)
 
 TGeoManager *gGeoMan = NULL;
 
-const Double_t SID_Xpos = 0.5;//было
-const Double_t SID_Ypos = -4.6;//было
-//const Double_t SID_Xpos = 0;
-//const Double_t SID_Ypos = 0;
+const Double_t SID_Xpos = 0.5;
+const Double_t SID_Ypos = -4.6;
 const Double_t SID_Zpos = 6.8;  //cm
 
 const Double_t ZLength_SIDActiveVolume = 0.0525;
