@@ -1,7 +1,7 @@
 R__ADD_INCLUDE_PATH($VMCWORKDIR)
-#include "/home/ilya/BMN/bmnroot/macro/run/geometry_run/geometry_run7.C"
+#include "macro/run/geometry_run/geometry_run7.C"
 
-#define GEANT3  // Choose: GEANT3 GEANT4
+#define GEANT4  // Choose: GEANT3 GEANT4
 // enumeration of generator names corresponding input files
 enum enumGenerators{URQMD, QGSM, HSD, BOX, PART, ION, DCMQGSM, DCMSMM};
 
@@ -11,10 +11,8 @@ enum enumGenerators{URQMD, QGSM, HSD, BOX, PART, ION, DCMQGSM, DCMSMM};
 // nEvents - number of events to transport
 // generatorName - generator name for the input file (enumeration above)
 // useRealEffects - whether we use realistic effects at simulation (Lorentz, misalignment)
-//void run_sim_bmn(TString inFile = "/opt/data/ArCu_3.2AGeV_mb_156.r12", TString outFile = "$VMCWORKDIR/macro/run/bmnsim.root", Int_t nStartEvent = 0, Int_t nEvents = 1,
-//                 enumGenerators generatorName = BOX, Bool_t useRealEffects = kFALSE)
-void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$VMCWORKDIR/macro/run/bmnsim.root", Int_t nStartEvent = 0, Int_t nEvents = 9000,
-                 enumGenerators generatorName = QGSM, Bool_t useRealEffects = kFALSE)
+void run_sim_bmn(TString inFile = "/opt/data/ArCu_3.2AGeV_mb_156.r12", TString outFile = "$VMCWORKDIR/macro/run/bmnsim.root",
+                 Int_t nStartEvent = 0, Int_t nEvents = 10, enumGenerators generatorName = BOX, Bool_t useRealEffects = kFALSE)
 {
     TStopwatch timer;
     timer.Start();
@@ -24,10 +22,10 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     FairRunSim* fRun = new FairRunSim();
 
     // Choose the Geant Navigation System
-#ifdef GEANT3
-    fRun->SetName("TGeant3");
-#else
+#ifdef GEANT4
     fRun->SetName("TGeant4");
+#else
+    fRun->SetName("TGeant3");
 #endif
 
     geometry(fRun); // load BM@N geometry
@@ -43,9 +41,8 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
 
     // Smearing of beam interaction point, if needed, and primary vertex position
     // DO NOT do it in corresponding gen. sections to avoid incorrect summation!!!
-    primGen->SetBeam(0.5, -4.6, 0.0, 0.0);
-    //primGen->SetBeam(2.06, -4.22, 0.0, 0.0);
-    primGen->SetTarget(-2.3, 0.0);
+    primGen->SetBeam(0.5, -4.6, 0.0, 0.0);  // (beamX0, beamY0, beamSigmaX, beamSigmaY)
+    primGen->SetTarget(-2.3, 0.0);          // (targetZ, targetDz)
     primGen->SmearVertexZ(kFALSE);
     primGen->SmearVertexXY(kFALSE);
 
@@ -53,7 +50,7 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     {
     // ------- UrQMD Generator
     case URQMD:{
-        if (!BmnFunctionSet::CheckFileExist(inFile)) return;
+        if (!BmnFunctionSet::CheckFileExist(inFile, 1)) exit(-1);
 
         MpdUrqmdGenerator* urqmdGen = new MpdUrqmdGenerator(inFile);
         //urqmdGen->SetEventPlane(0., 360.);
@@ -68,6 +65,7 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
 
     // ------- Particle Generator
     case PART:{
+        // FairParticleGenerator generates a single particle type (PDG, mult, [GeV] px, py, pz, [cm] vx, vy, vz)
         FairParticleGenerator* partGen = new FairParticleGenerator(211, 10, 1, 0, 3, 1, 0, 0);
         primGen->AddGenerator(partGen);
         break;
@@ -75,7 +73,7 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
 
     // ------- Ion Generator
     case ION:{
-        // Start beam from a far point to check mom. reconstruction procedure
+        // Start beam from a far point to check mom. reconstruction procedure (Z, A, q, mult, [GeV] px, py, pz, [cm] vx, vy, vz)
         FairIonGenerator* fIongen = new FairIonGenerator(6, 12, 6, 1, 0., 0., 4.4, 0., 0., -647.);
         primGen->AddGenerator(fIongen);
         break;
@@ -84,17 +82,17 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     // ------- Box Generator
     case BOX:{
         gRandom->SetSeed(0);
-        FairBoxGenerator* boxGen = new FairBoxGenerator(2212, 12); // 13 = muon; 1 = multipl.
-        boxGen->SetPRange(1., 1.); // GeV/c, setPRange vs setPtRange
-        boxGen->SetPhiRange(0, 360); // Azimuth angle range [degree]
-        boxGen->SetThetaRange(0, 30); // Polar angle in lab system range [degree]
+        FairBoxGenerator* boxGen = new FairBoxGenerator(2212, 10); // 13 = muon; 1 = multipl.
+        boxGen->SetPRange(1., 1.);      // GeV/c, setPRange vs setPtRange
+        boxGen->SetPhiRange(0, 360);    // Azimuth angle range [degree]
+        boxGen->SetThetaRange(10, 15);  // Polar angle in lab system range [degree]
         primGen->AddGenerator(boxGen);
         break;
     }
 
     // ------- HSD/PHSD Generator
     case HSD:{
-        if (!BmnFunctionSet::CheckFileExist(inFile)) return;
+        if (!BmnFunctionSet::CheckFileExist(inFile, 1)) exit(-1);
 
         MpdPHSDGenerator* hsdGen = new MpdPHSDGenerator(inFile.Data());
         //hsdGen->SetPsiRP(0.); // set fixed Reaction Plane angle instead of random
@@ -111,7 +109,7 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     case QGSM:
     case DCMQGSM:{
 
-        if (!BmnFunctionSet::CheckFileExist(inFile)) return;
+        if (!BmnFunctionSet::CheckFileExist(inFile, 1)) exit(-1);
 
         MpdLAQGSMGenerator* guGen = new MpdLAQGSMGenerator(inFile.Data(), kFALSE);
         primGen->AddGenerator(guGen);
@@ -124,7 +122,7 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     }
     case DCMSMM:{
 
-        if (!BmnFunctionSet::CheckFileExist(inFile)) return;
+        if (!BmnFunctionSet::CheckFileExist(inFile, 1)) exit(-1);
 
         MpdDCMSMMGenerator* smmGen = new MpdDCMSMMGenerator(inFile.Data());
         primGen->AddGenerator(smmGen);
@@ -136,14 +134,16 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
         break;
     }
 
-    default: { cout<<"ERROR: Generator name was not pre-defined: "<<generatorName<<endl; return; }
+    default: { cout<<"ERROR: Generator name was not pre-defined: "<<generatorName<<endl; exit(-3); }
     }// end of switch (generatorName)
 
+    // if directory for the output file does not exist, then create
+    if (BmnFunctionSet::CreateDirectoryTree(outFile, 1) < 0) exit(-2);
     fRun->SetSink(new FairRootFileSink(outFile.Data()));
     fRun->SetIsMT(false);
 
     // -----   Create magnetic field   ----------------------------------------
-    BmnFieldMap* magField = new BmnNewFieldMap("field_sp41v4_ascii_Extrap.root");
+    BmnFieldMap* magField = new BmnNewFieldMap("field_sp41v5_ascii_Extrap.root");
     Double_t fieldScale = 1200. / 900.;
     magField->SetScale(fieldScale);
     fRun->SetField(magField);
@@ -151,6 +151,8 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     fRun->SetStoreTraj(kTRUE);
     fRun->SetRadLenRegister(kFALSE); // radiation length manager
 
+
+    // -----   Digitizers: converting MC points to detector digits   -----------
     // SI-Digitizer
     BmnSiliconConfiguration::SILICON_CONFIG si_config = BmnSiliconConfiguration::RunSpring2018;
     BmnSiliconDigitizer* siliconDigit = new BmnSiliconDigitizer();
@@ -158,10 +160,6 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     siliconDigit->SetOnlyPrimary(kFALSE);
     siliconDigit->SetUseRealEffects(useRealEffects);
     fRun->AddTask(siliconDigit);
-
-    // FD-Digitizer    
-    BmnTrigDigitizer* trigDigit = new BmnTrigDigitizer();
-    fRun->AddTask(trigDigit);
 
     // GEM-Digitizer
     BmnGemStripConfiguration::GEM_CONFIG gem_config = BmnGemStripConfiguration::RunSpring2018;
@@ -198,10 +196,10 @@ void run_sim_bmn(TString inFile = "ArPb_3.2AGeV_mb_10kev", TString outFile = "$V
     // Trajectories Visualization (TGeoManager only)
     FairTrajFilter* trajFilter = FairTrajFilter::Instance();
     // Set cuts for storing the trajectories
-    trajFilter->SetStepSizeCut(0.01); // 1 cm
-    trajFilter->SetVertexCut(-200., -200., -150., 200., 200., 1100.);
-    trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
-    trajFilter->SetEnergyCut(0., 4.); // 0 < Etot < 1.04 GeV //
+    trajFilter->SetStepSizeCut(0.01); // [cm]
+    trajFilter->SetVertexCut(-200., -200., -1000., 200., 200., 1100.); // (vxMin, vyMin, vzMin, vxMax, vyMax, vzMax)
+    trajFilter->SetMomentumCutP(30e-3); // p_lab > 30 MeV
+    trajFilter->SetEnergyCut(0., 10.);  // 0 < Etot < 10 GeV
     trajFilter->SetStorePrimaries(kTRUE);
     trajFilter->SetStoreSecondaries(kTRUE); //kFALSE
 

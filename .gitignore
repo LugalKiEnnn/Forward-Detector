@@ -2,8 +2,8 @@
 !bmnroot/FD/BmnTrigDigitizer.cxx
 !bmnroot/FD/BmnTrigDigitizer.h
 !bmnroot/FD/CMakeLists.txt
-!bmnroot/FD/MyFunctions.cxx
-!bmnroot/FD/MyFunctions.h
+!bmnroot/FD/BmnFDHitCalc.cxx
+!bmnroot/FD/BmnFDHitCalc.h
 !bmnroot/macro/geometry/create_fd_root_v10.C
 !bmnroot/macro/run/readFD.C
 !bmnroot/macro/run/run_sim_bmn.C
